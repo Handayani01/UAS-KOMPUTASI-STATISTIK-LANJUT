@@ -1,0 +1,151 @@
+---
+title   : "Sentiment Analysis Wine Reviews"
+author  : "Handayani"
+prodi   : "Program Studi Statistika"
+fakultas: "Fakultas Matematika dan Ilmu Pengetahuan Alama"
+Instansi: "Universitas Sulawesi Barat"
+date    : "12/20/2022"
+output  : html_document
+---
+1.PENGERTIAN
+  
+  Penambangan teks adalah proses ekstraksi pola berupa informasi dan pengetahuan yang berguna      dari sejumlah besar sumber data teks, seperti dokumen Word, PDF, kutipan teks, dll
+
+2.TUJUAN
+  
+  Tujuan dari text mining adalah untuk mendapatkan informasi yang berguna dari sekumpulan          dokumen. Jadi, sumber data yang digunakan pada text mining adalah kumpulan teks yang memiliki    format yang tidak terstruktur atau minimal semi terstruktur.
+
+3.PACKAGE YANG DIGUNAKAN 
+  
+  tm        : untuk operasi penambangan teks seperti menghapus angka, karakter khusus, tanda       baca, dan kata-kata berhenti (Kata-kata berhenti dalam bahasa apa pun adalah kata-kata yang      paling sering muncul yang memiliki nilai sangat kecil untuk NLP dan harus disaring. Contoh       kata-kata berhenti dalam bahasa Inggris adalah “the”, “adalah”, “adalah”.)
+  
+  snowballc : untuk stemming, yaitu proses mereduksi kata menjadi bentuk dasar atau akarnya.       Misalnya, algoritma stemming akan mereduksi kata “fishing”, “fished” dan “fisher” menjadi stem   “fish”.
+  
+  wordcloud : untuk menghasilkan plot cloud kata.
+  
+  textclean : Alat Pembersih Teks
+  
+  tidytext  : Alat untuk merapikan teks 
+  
+  readr     : membaca data teks persegi panjang seperti csv, tsv, fwf.
+
+4.DESKRIPSI
+  
+  Dataset ini berisi tiga file:
+
+  winemag-data-130k-v2.csv berisi 10 kolom dan 130 ribu baris ulasan anggur.
+
+  winemag-data_first150k.csv berisi 10 kolom dan 150 ribu baris ulasan anggur.
+
+  winemag-data-130k-v2.json berisi 6919 node ulasan anggur.
+  
+  Tapi data yang saya gunakan yaitu : winemag-data-130k-v2.csv berisi 10 kolom dan 130 ribu baris                                       ulasan anggur.
+  
+  terdiri dari  : 
+  
+  description 
+  
+  designation
+  
+  points
+  
+  price
+  
+  province
+  
+  region_1
+  
+  region_2
+  
+  taster_name
+  
+  taster_twitter_handle
+  
+  title
+  
+  variety
+  
+  winery
+
+
+5.Link Dataset: https://www.kaggle.com/datasets/zynicide/wine-reviews
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Input Library
+```{r}
+library(wordcloud)
+library(tm)
+library(textclean)
+library(tidytext)
+library(readr)
+```
+
+#Menampilkan data
+```{r}
+winemag_data <- read_csv("D:/Hani/winemag_data.csv")
+head(winemag_data)
+```
+
+#Mengubah Data Frame Menjadi Data Vektor
+```{r}
+rev<- winemag_data$description
+head (rev)
+```
+
+##Text Cleaning
+#Mengubah Kapital Menjadi Huruf Kecil
+```{r}
+rev <- tolower(rev)
+head(rev)
+```
+
+#Mengembalikan Kata yang disingkat Menjadi Kata Aslinya
+```{r}
+rev <- replace_contraction(rev)
+head(rev)
+```
+
+#Menghapus Huruf yang Bukan Kata
+```{r}
+rev <- strip(rev)
+head(rev)
+```
+
+#Menghapus Beberapa Kata
+```{r}
+rev <-removeWords(rev, c("the","our","you","and","was","this","with","not","too","but","for",
+                         "its","who","has","what","yet","your","out","else","more",
+                         "own","are","abaut","just","because","all","etc","works","these","did","say","use","end","she","lot","can","not","for","saw","also","have","that","after",","))
+head(rev)
+```
+
+##Membuat Word Cloud
+#Mengubah Data Frame Menjadi Data Faktor
+```{r}
+tdm <- TermDocumentMatrix(rev)
+m <- as.matrix(tdm)
+v <- sort(rowSums(m),decreasing = TRUE)
+```
+
+#Mengubah Data Faktor Menjadi Data Frame
+```{r}
+d <- data.frame(word = names(v), freq = v)
+
+wordcloud(d$word, d$freq,
+          random.order = FALSE,
+          max.words = 500,
+          colors = brewer.pal(name = "Dark2",8 ))
+```
+
+# Plot kata-kata yang paling sering muncul
+```{r}
+barplot(d[1:5,]$freq, las = 2, names.arg = d[1:5,]$word,
+        col ="lightgreen", main ="Top 5 most frequent words",
+        ylab = "Word frequencies")
+```
+
+Kesimpulan: 
+Berdasarkan plot diatas dapat disimpulkan bahwa kata yang memiliki frekuensi yang paling tinggi adalah Wine, dimana artinya kata wine lebih banyak muncul dari banding kata yang lain. 
